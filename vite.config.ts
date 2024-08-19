@@ -3,7 +3,7 @@
  * @Author: 朱晨光
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: 朱晨光
- * @LastEditTime: 2024-08-19 10:23:07
+ * @LastEditTime: 2024-08-19 16:53:05
  */
 import { fileURLToPath, URL } from 'node:url'
 
@@ -43,7 +43,7 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 3000,
       proxy: {
-        '/room': {
+        '/chat_room': {
           target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
           changeOrigin: true // 允许跨域
           // rewrite: (path) => path.replace(/^\/room/, '') // 将ccc替换为空

@@ -15,7 +15,7 @@ export interface IData<T> {
   data: T
 }
 export const instance = axios.create({
-  baseURL: '/room',
+  baseURL: '/chat_room',
   // baseURL: '/mobile_Vue3',
   timeout: 30 * 1000 // 统一设置超时时间
 })

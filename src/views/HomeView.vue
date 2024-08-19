@@ -3,11 +3,15 @@
  * @Author: 朱晨光
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: 朱晨光
- * @LastEditTime: 2024-08-19 14:46:11
+ * @LastEditTime: 2024-08-19 16:44:40
 -->
 <script setup lang="ts">
 import { ref } from 'vue'
 import { get, post } from '@/ajax'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
 const mode = ref('白日模式')
 const setMode = (e) => {
   get('/test')
@@ -60,11 +64,15 @@ const setMode = (e) => {
     }
   }
 }
+const enterRoom = () => {
+  router.push({ name: 'room' })
+}
 </script>
 
 <template>
   <div class="homeContainer">
     <!-- <el-button @click="setMode">切换模式</el-button> -->
+    <el-button @click="enterRoom">路由跳转</el-button>
     <!-- <div class="text">{{ mode }}</div> -->
   </div>
 </template>
