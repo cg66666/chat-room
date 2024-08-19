@@ -1,0 +1,21 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --background-color: #fff;
+  --text-color: #000;
+  &::view-transition-new(root),
+  &::view-transition-old(root) {
+    /* 关闭默认动画，否则影响自定义动画的执行 */
+    animation: none;
+  }
+}
+
+.dark {
+  --background-color: #000;
+  --text-color: #fff;
+  &::view-transition-old(root) {
+    z-index: 100;
+  }
+}

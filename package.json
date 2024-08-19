@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev:server": "npm run server --prefix server",
+    "dev:client": "vite --mode development",
+    "dev": "npm-run-all --parallel dev:server dev:client",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
@@ -15,6 +17,8 @@
     "lint-staged": "lint-staged"
   },
   "dependencies": {
+    "axios": "^1.7.4",
+    "element-plus": "^2.8.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
@@ -35,7 +39,9 @@
     "lint-staged": "^15.2.9",
     "npm-run-all2": "^6.2.0",
     "prettier": "^3.2.5",
-    "typescript": "~5.4.0",
+    "typescript": "~5.5.4",
+    "unplugin-auto-import": "^0.18.2",
+    "unplugin-vue-components": "^0.27.4",
     "vite": "^5.3.1",
     "vue-tsc": "^2.0.21"
   },
