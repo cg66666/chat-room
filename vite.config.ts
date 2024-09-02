@@ -1,9 +1,9 @@
 /*
  * @Description: file content
- * @Author: 朱晨光
+ * @Author: cg
  * @Date: 2024-08-16 11:35:37
- * @LastEditors: 朱晨光
- * @LastEditTime: 2024-08-19 16:53:05
+ * @LastEditors: cg
+ * @LastEditTime: 2024-08-26 15:00:51
  */
 import { fileURLToPath, URL } from 'node:url'
 
@@ -45,8 +45,8 @@ export default defineConfig(({ command, mode }) => {
       proxy: {
         '/chat_room': {
           target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
-          changeOrigin: true // 允许跨域
-          // rewrite: (path) => path.replace(/^\/room/, '') // 将ccc替换为空
+          changeOrigin: true, // 允许跨域
+          rewrite: (path) => path.replace(/^\/chat_room/, '/room') // 将ccc替换为空
         }
       }
     }

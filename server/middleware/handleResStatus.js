@@ -1,10 +1,12 @@
 /*
  * @Description: file content
- * @Author: 朱晨光
+ * @Author: cg
  * @Date: 2023-12-02 21:21:12
- * @LastEditors: 朱晨光
- * @LastEditTime: 2024-05-27 10:34:12
+ * @LastEditors: cg
+ * @LastEditTime: 2024-08-28 18:16:19
  */
+
+const { logger } = require('../app')
 
 module.exports = async (ctx, next) => {
   if (ctx.success) {
@@ -12,6 +14,7 @@ module.exports = async (ctx, next) => {
     ctx.body = ctx.success
   } else if (ctx.fail) {
     if (!ctx.fail.code) ctx.fail.code = 'A0001' // 失败的情况，msg提示内容
+    logger.error({ request: ctx.request, response: ctx.response })
     ctx.body = ctx.fail
   }
   console.log('最终返回值', ctx.body)

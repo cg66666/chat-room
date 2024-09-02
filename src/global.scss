@@ -2,9 +2,11 @@
   box-sizing: border-box;
 }
 
+// 白日模式变量
 :root {
   --background-color: #fff;
   --text-color: #000;
+  --border-color: #000;
   &::view-transition-new(root),
   &::view-transition-old(root) {
     /* 关闭默认动画，否则影响自定义动画的执行 */
@@ -12,10 +14,20 @@
   }
 }
 
+// 黑夜模式变量
 .dark {
   --background-color: #000;
   --text-color: #fff;
+  --border-color: #fff;
   &::view-transition-old(root) {
     z-index: 100;
   }
+}
+
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
 }

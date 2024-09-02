@@ -1,18 +1,36 @@
 /*
  * @Description: file content
- * @Author: 朱晨光
+ * @Author: cg
  * @Date: 2024-08-18 15:40:54
- * @LastEditors: 朱晨光
- * @LastEditTime: 2024-08-19 09:48:14
+ * @LastEditors: cg
+ * @LastEditTime: 2024-08-26 15:22:17
  */
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios'
-// import { useLogin } from '@/stores'
-// import { showNotify } from 'vant'
-import { ElMessage } from 'element-plus'
+
+// code码提示语
+const codeMessage: Record<number, string> = {
+  200: '服务器成功返回请求的数据。',
+  201: '新建或修改数据成功。',
+  202: '一个请求已经进入后台排队（异步任务）。',
+  204: '删除数据成功。',
+  400: '发出的请求有错误，服务器没有进行新建或修改数据的操作。',
+  401: '用户没有权限（令牌、用户名、密码错误）。',
+  403: '用户得到授权，但是访问是被禁止的。',
+  404: '发出的请求针对的是不存在的记录，服务器没有进行操作。',
+  406: '请求的格式不可得。',
+  410: '请求的资源被永久删除，且不会再得到的。',
+  422: '当创建一个对象时，发生一个验证错误。',
+  500: '服务器发生错误，请检查服务器。',
+  502: '网关错误。',
+  503: '服务不可用，服务器暂时过载或维护。',
+  504: '网关超时。'
+}
+
 export interface IData<T> {
   code: number
   msg: string
   data: T
+  successful: boolean
 }
 export const instance = axios.create({
   baseURL: '/chat_room',
@@ -36,18 +54,19 @@ instance.interceptors.response.use(
     if (code === '00000') return { successful: true, ..._data }
     // showNotify(msg)
     ElMessage({
-      message: 'Warning, this is a warning message.',
+      message: msg,
       type: 'warning',
       plain: true
     })
-    return Promise.reject()
+    return { successful: false, ..._data }
   },
   (error: AxiosError) => {
-    console.log(error)
-    ElMessage({
-      message: 'Warning, this is a warning message.',
-      type: 'warning',
-      plain: true
+    console.log('error', error)
+    const status: number = error.response?.status || 404
+    ElNotification({
+      title: String(status),
+      message: codeMessage[status],
+      type: 'error'
     })
     // showNotify('请求失败，请检查网络')
     return Promise.reject(error)

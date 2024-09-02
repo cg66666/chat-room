@@ -1,29 +1,25 @@
 /*
  * @Description: file content
- * @Author: 朱晨光
+ * @Author: cg
  * @Date: 2023-12-02 20:41:44
- * @LastEditors: 朱晨光
- * @LastEditTime: 2024-08-18 02:30:17
+ * @LastEditors: cg
+ * @LastEditTime: 2024-08-28 17:40:13
  */
+
+// 引入日志工具
+const { accessLogger, logger } = require('./log/index')
+// 报错日志存储
+module.exports.logger = logger
 
 // 数据库声明（注意执行顺序）
 const { JsonDB, Config } = require('node-json-db')
 
-// // account库，用于查重
-// const accountId_db = new JsonDB(new Config('./db/accountDataBase', true, false, '/'))
-// module.exports.accountId_db = accountId_db
+// 简易json数据库
+const room_db = new JsonDB(new Config('./db/accountDataBase', true, false, '/'))
+module.exports.room_db = room_db
 
-// // 个人信息数据库
-// const user_db = new JsonDB(new Config('./db/userDataBase', true, false, '/'))
-// module.exports.user_db = user_db
-
-// // 历史记录数据库（用于查询所有账号登录历史）
-// const history_db = new JsonDB(new Config('./db/historyDataBase', true, false, '/'))
-// module.exports.history_db = history_db
-
-// // 登录token存储数据库（用于查询token是否失效）
-// const loginToken_db = new JsonDB(new Config('./db/tokenDataBase', true, false, '/'))
-// module.exports.loginToken_db = loginToken_db
+// 加载定时期插件
+require('./db/schedule')
 
 const Koa = require('koa')
 const { koaBody } = require('koa-body')
@@ -33,6 +29,9 @@ const router = require('./controller')
 
 // 统一处理返回内容
 const handleResStatus = require('./middleware/handleResStatus')
+
+// websocket
+const ws = require('./ws/index')
 
 const app = new Koa()
 
@@ -44,7 +43,13 @@ app.use(router.allowedMethods()) // 对请求进行一些限制处理
 
 app.use(handleResStatus) // 对返回code码统一处理
 
+// 添加日志功能
+app.use(accessLogger())
+
 const server = app.listen(8080, () => {
   let port = server.address().port
   console.log('服务器开启: http://localhost:8080/', port)
 })
+
+// 开启websocket
+ws(server)

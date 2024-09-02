@@ -16,5 +16,6 @@ module.exports = {
   },
   rules: {
     'no-unused-vars': 'off'
-  }
+  },
+  ignorePatterns: ['src/asset/icon-font/index.js', 'vite.config.ts']
 }

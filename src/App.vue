@@ -1,9 +1,9 @@
 <!--
  * @Description: file content
- * @Author: 朱晨光
+ * @Author: cg
  * @Date: 2024-08-16 11:35:37
- * @LastEditors: 朱晨光
- * @LastEditTime: 2024-08-19 17:11:48
+ * @LastEditors: cg
+ * @LastEditTime: 2024-08-28 18:03:39
 -->
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
@@ -11,11 +11,7 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <template>
   <div class="app">
-    <RouterView v-slot="{ Component }">
-      <transition name="fade" mode="out-in">
-        <component :is="Component" />
-      </transition>
-    </RouterView>
+    <RouterView> </RouterView>
   </div>
 </template>
 
@@ -24,6 +20,7 @@ import { RouterLink, RouterView } from 'vue-router'
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  background: var(--background-color);
 }
 
 .fade-enter-active,
