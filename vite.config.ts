@@ -3,7 +3,7 @@
  * @Author: cg
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: cg
- * @LastEditTime: 2024-08-26 15:00:51
+ * @LastEditTime: 2024-10-18 15:27:49
  */
 import { fileURLToPath, URL } from 'node:url'
 
@@ -25,6 +25,10 @@ export default defineConfig(({ command, mode }) => {
         resolvers: [ElementPlusResolver()]
       }),
       Components({
+        // 指定组件按需引入所在文件夹的位置，默认是src/components
+        dirs: ['src/components'],
+        // 配置type文件生成位置，默认是components.d.ts
+        dts: 'components.d.ts',
         resolvers: [ElementPlusResolver()]
       })
     ],
@@ -46,7 +50,18 @@ export default defineConfig(({ command, mode }) => {
         '/chat_room': {
           target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
           changeOrigin: true, // 允许跨域
-          rewrite: (path) => path.replace(/^\/chat_room/, '/room') // 将ccc替换为空
+          rewrite: (path) => path.replace(/^\/chat_room/, '/room')
+        },
+        '/SSO': {
+          target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
+          changeOrigin: true, // 允许跨域
+          rewrite: (path) => path.replace(/^\/chat_room/, '/SSO')
+        },
+        '/ws': {
+          target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
+          changeOrigin: true, // 允许跨域
+          ws: true,
+          rewrite: (path) => path.replace(/^\/ws/, '/')
         }
       }
     }

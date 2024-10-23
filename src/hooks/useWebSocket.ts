@@ -3,7 +3,7 @@
  * @Author: cg
  * @Date: 2024-08-20 17:20:35
  * @LastEditors: cg
- * @LastEditTime: 2024-09-02 10:09:37
+ * @LastEditTime: 2024-10-17 13:53:14
  */
 import { onMounted, onUnmounted, ref } from 'vue'
 import dayjs from 'dayjs'
@@ -17,14 +17,15 @@ import dayjs from 'dayjs'
  */
 export function useWebSocket<T>(isHeart: boolean, pingConfig?: Record<any, any>, wsUrl?: string) {
   let ws: WebSocket | null
-  const pingTime = 1500
+  const pingTime = 2000
   let ping: number
   let closeWebSocket = false
   // 重启最高次数
   const maxTime = 10
   const backMsg = ref<T>()
   const initWs = () => {
-    ws = new WebSocket(wsUrl ?? import.meta.env.VITE_WS_URL)
+    ws = new WebSocket(wsUrl ?? 'ws://' + location.host + '/ws')
+    // ws = new WebSocket(wsUrl ??   import.meta.env.VITE_WS_URL)
     ws.onopen = () => {
       console.log('WebSocket 连接已建立！')
       if (isHeart) {

@@ -3,13 +3,13 @@
  * @Author: cg
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: cg
- * @LastEditTime: 2024-08-30 15:11:36
+ * @LastEditTime: 2024-10-21 23:37:07
 -->
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue'
 import { get, post } from '@/ajax'
 import { useRouter } from 'vue-router'
-import { useModeStore, ModeEnum } from '@/stores'
+import { ModeEnum, useLoginStore } from '@/stores'
 import { type FormInstance, type FormRules } from 'element-plus'
 
 enum OperateEnum {
@@ -17,7 +17,8 @@ enum OperateEnum {
   JOIN
 }
 
-const store = useModeStore()
+// 登录相关
+const loginStore = useLoginStore()
 
 const router = useRouter()
 
@@ -49,11 +50,18 @@ const dialogVisible = ref(false)
 
 // 开启匿名
 const openAnoumity = (e: MouseEvent) => {
-  // post('create')
+  if (loginStore.mode === ModeEnum.LOGGED) {
+    return ElMessage({
+      message: '请先退出登录！',
+      type: 'warning',
+      plain: true
+    })
+  }
   if (document.startViewTransition) {
     const transition = document.startViewTransition(() => {
       document.documentElement.classList.toggle('dark')
-      store.mode = store.mode === ModeEnum.ANONYMITY ? ModeEnum.NOTLOGING : ModeEnum.ANONYMITY
+      loginStore.mode =
+        loginStore.mode === ModeEnum.ANONYMITY ? ModeEnum.NOTLOGING : ModeEnum.ANONYMITY
     })
     // 在 transition.ready 的 Promise 完成后，执行自定义动画
     transition.ready.then(() => {
@@ -85,32 +93,50 @@ const openAnoumity = (e: MouseEvent) => {
     })
   } else {
     document.documentElement.classList.toggle('dark')
-    store.mode = store.mode === ModeEnum.ANONYMITY ? ModeEnum.NOTLOGING : ModeEnum.ANONYMITY
+    loginStore.mode =
+      loginStore.mode === ModeEnum.ANONYMITY ? ModeEnum.NOTLOGING : ModeEnum.ANONYMITY
   }
 }
 
 // 去创建房间
 const toCreate = () => {
-  if (store.mode !== ModeEnum.ANONYMITY)
+  if (loginStore.mode === ModeEnum.NOTLOGING) {
     return ElMessage({
-      message: '请先登录！',
+      message: '请先登录或开启匿名！',
       type: 'warning',
       plain: true
     })
+  }
+
   if (formRef.value) formRef.value.resetFields()
+  formData.user = loginStore.userName
   dialogVisible.value = true
   dialogMode.value = OperateEnum.CREATE
 }
 
+// 去登陆
+const toLogin = () => {
+  if (loginStore.mode === ModeEnum.ANONYMITY) {
+    return ElMessage({
+      message: '请先关闭匿名模式！',
+      type: 'warning',
+      plain: true
+    })
+  } else {
+    loginStore.toLogin()
+  }
+}
+
 // 去加入房间
 const toJoin = () => {
-  if (store.mode !== ModeEnum.ANONYMITY)
+  if (loginStore.mode === ModeEnum.NOTLOGING)
     return ElMessage({
-      message: '请先登录！',
+      message: '请先登录或开启匿名！',
       type: 'warning',
       plain: true
     })
   if (formRef.value) formRef.value.resetFields()
+  formData.user = loginStore.userName
   dialogVisible.value = true
   dialogMode.value = OperateEnum.JOIN
 }
@@ -120,10 +146,14 @@ const createRoom = () => {
   if (!formRef.value) return
   formRef.value.validate(async (valid, fields) => {
     if (valid) {
-      console.log('formData', formData)
-      const res = await post('/create', formData)
+      const res = await post('/chat_room/create', formData)
       if (res.successful) {
         const { room, user, password } = formData
+        loginStore.userName = user
+        loginStore.roomInfo = {
+          room,
+          password
+        }
         formRef.value?.resetFields()
         dialogVisible.value = false
         router.push({
@@ -132,7 +162,7 @@ const createRoom = () => {
             room,
             user,
             password,
-            isAnonymity: store.mode
+            mode: loginStore.mode
           }
         })
       }
@@ -145,10 +175,14 @@ const joinRoom = async () => {
   if (!formRef.value) return
   formRef.value.validate(async (valid, fields) => {
     if (valid) {
-      console.log('formData', formData)
-      const res = await post('/join', formData)
+      const res = await post('/chat_room/join', formData)
       if (res.successful) {
         const { room, user, password } = formData
+        loginStore.userName = user
+        loginStore.roomInfo = {
+          room,
+          password
+        }
         formRef.value?.resetFields()
         dialogVisible.value = false
         router.push({
@@ -157,7 +191,7 @@ const joinRoom = async () => {
             room,
             user,
             password,
-            isAnonymity: store.mode
+            mode: loginStore.mode
           }
         })
       }
@@ -165,8 +199,25 @@ const joinRoom = async () => {
   })
 }
 
+// 退出登录
+const toLogOut = async () => {
+  const res = await get('/chat_room/logout')
+  if (res.successful) {
+    // 清除cookie
+    document.cookie = 'X-TOKEN' + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    loginStore.mode = ModeEnum.NOTLOGING
+    loginStore.userName = ''
+    loginStore.roomInfo = undefined
+    ElMessage({
+      message: '退出登录成功！',
+      type: 'warning',
+      plain: true
+    })
+  }
+}
+
 onMounted(() => {
-  console.log('OK了？')
+  // 两个动画执行延迟
   setTimeout(() => {
     isInit1.value = true
   }, 450)
@@ -182,32 +233,33 @@ onMounted(() => {
       <div class="container">
         <div class="leftTop box">
           <div :class="`boxContainer leftTopBox ${isInit2 ? 'showBox' : ''}`" @click="toCreate">
-            <ChatIcon
-              :name="store.mode === ModeEnum.ANONYMITY ? 'icon-create_white' : 'icon-create'"
-              size="30px"
-              class="icon"
-            ></ChatIcon>
+            <ChatIcon name="icon-create" size="30px" class="icon"></ChatIcon>
             <div>创建房间</div>
           </div>
         </div>
         <div class="rightTop box">
           <div :class="`boxContainer rightTopBox ${isInit2 ? 'showBox' : ''}`" @click="toJoin">
-            <ChatIcon
-              :name="store.mode === ModeEnum.ANONYMITY ? 'icon-join_white' : 'icon-join'"
-              size="32px"
-              class="icon"
-            ></ChatIcon>
+            <ChatIcon name="icon-join" size="32px" class="icon"></ChatIcon>
             <div>加入房间</div>
           </div>
         </div>
         <div class="leftBottom box">
-          <div :class="`boxContainer leftBottomBox ${isInit2 ? 'showBox' : ''}`">
+          <div
+            :class="`boxContainer leftBottomBox ${isInit2 ? 'showBox' : ''}`"
+            @click="() => (loginStore.mode === ModeEnum.LOGGED ? toLogOut() : toLogin())"
+          >
             <ChatIcon
-              :name="store.mode === ModeEnum.ANONYMITY ? 'icon-login_white' : 'icon-login'"
+              :name="loginStore.mode === ModeEnum.NOTLOGING ? 'icon-login' : 'icon-logout'"
               size="30px"
               class="icon"
             ></ChatIcon>
-            <div>登录</div>
+            <div>
+              {{
+                [ModeEnum.NOTLOGING, ModeEnum.ANONYMITY].includes(loginStore.mode)
+                  ? '登录'
+                  : '退出登录'
+              }}
+            </div>
           </div>
         </div>
         <div class="rightBottom box">
@@ -215,12 +267,8 @@ onMounted(() => {
             :class="`boxContainer rightBottomBox ${isInit2 ? 'showBox' : ''}`"
             @click="openAnoumity"
           >
-            <ChatIcon
-              :name="store.mode === ModeEnum.ANONYMITY ? 'icon-anonymity_white' : 'icon-anonymity'"
-              size="32px"
-              class="icon"
-            ></ChatIcon>
-            <div>{{ store.mode === ModeEnum.ANONYMITY ? '关闭' : '开启' }}匿名</div>
+            <ChatIcon name="icon-anonymity" size="32px" class="icon"></ChatIcon>
+            <div>{{ loginStore.mode === ModeEnum.ANONYMITY ? '关闭' : '开启' }}匿名</div>
           </div>
         </div>
         <div :class="`firstLine line ${isInit1 ? 'widthLine' : ''}`"></div>
@@ -249,7 +297,7 @@ onMounted(() => {
           <el-input
             v-model="formData.user"
             autocomplete="off"
-            :disabled="store.mode === ModeEnum.LOGGED"
+            :disabled="loginStore.mode === ModeEnum.LOGGED"
           />
         </el-form-item>
         <el-form-item label="密码" prop="password">
@@ -283,6 +331,12 @@ onMounted(() => {
 :deep(.el-dialog) {
   width: 90%;
   max-width: 550px;
+}
+:deep(input) {
+  font-size: 16px;
+  &:focus {
+    font-size: 16px;
+  }
 }
 .homeContainer {
   height: 100%;

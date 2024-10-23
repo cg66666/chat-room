@@ -31,3 +31,8 @@
   fill: currentColor;
   overflow: hidden;
 }
+
+// 设置message组件最小宽度
+.el-message {
+  min-width: 190px;
+}

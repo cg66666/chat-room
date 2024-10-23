@@ -3,7 +3,7 @@
  * @Author: cg
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: cg
- * @LastEditTime: 2024-08-26 14:00:52
+ * @LastEditTime: 2024-09-19 15:17:44
  */
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -11,8 +11,11 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-// 引入全局组件
-import globalComponent from '@/components/global/index'
+import { get, post } from '@/ajax'
+
+import { useLoginStore } from '@/stores/index'
+
+import { getQueryParams } from '@/utils/index'
 
 // iconfont
 import '@/asset/icon-font'
@@ -29,11 +32,11 @@ import './global.scss'
 const app = createApp(App)
 
 app.use(createPinia())
+
+const store = useLoginStore()
+
+store.checkLogin()
+
 app.use(router)
 
 app.mount('#app')
-
-// 自动注册全局的组件
-for (const componentItme in globalComponent) {
-  app.component(componentItme, globalComponent[componentItme])
-}

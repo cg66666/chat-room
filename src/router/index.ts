@@ -3,7 +3,7 @@
  * @Author: cg
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: cg
- * @LastEditTime: 2024-08-19 16:51:28
+ * @LastEditTime: 2024-09-13 11:10:31
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -17,7 +17,7 @@ const router = createRouter({
     {
       path: '/home',
       name: 'home',
-      component: () => import('../views/HomeView.vue')
+      component: () => import('../views/HomeView/HomeView.vue')
     },
     {
       path: '/room',

@@ -3,9 +3,11 @@
  * @Author: cg
  * @Date: 2024-08-18 15:40:54
  * @LastEditors: cg
- * @LastEditTime: 2024-08-26 15:22:17
+ * @LastEditTime: 2024-09-20 16:48:40
  */
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios'
+import { getCookie, getQueryParams } from '@/utils'
+import { ModeEnum, useLoginStore } from '@/stores'
 
 // code码提示语
 const codeMessage: Record<number, string> = {
@@ -33,15 +35,17 @@ export interface IData<T> {
   successful: boolean
 }
 export const instance = axios.create({
-  baseURL: '/chat_room',
+  // baseURL: '/chat_room',
   // baseURL: '/mobile_Vue3',
   timeout: 30 * 1000 // 统一设置超时时间
 })
 
 instance.interceptors.request.use(
   (req) => {
-    // const loginStore = useLogin()
-    // req.headers['X-Token'] = loginStore.token
+    const XToken = getCookie('X-TOKEN')
+    if (XToken) {
+      req.headers['X-Token'] = XToken
+    }
     return req
   },
   (error) => Promise.reject(error)
@@ -68,6 +72,11 @@ instance.interceptors.response.use(
       message: codeMessage[status],
       type: 'error'
     })
+    // 登录相关
+    const loginStore = useLoginStore()
+    if (error.response?.status === 401) {
+      loginStore.toLogin()
+    }
     // showNotify('请求失败，请检查网络')
     return Promise.reject(error)
   }

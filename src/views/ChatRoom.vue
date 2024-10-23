@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, watchEffect, nextTick } from 'vue'
+import { ref, watch, onMounted, watchEffect, nextTick, onBeforeUnmount } from 'vue'
 import dayjs from 'dayjs'
-import { useModeStore, ModeEnum } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
 import { useWebSocket } from '@/hooks'
 import { get, post } from '@/ajax'
-import getRandomColor from '@/utils/getRandomColor'
+import { ModeEnum, useLoginStore } from '@/stores'
+import { getRandomColor, generateColorFromString } from '@/utils'
 
 enum CodeEnum {
   SUCCESS = '00000',
@@ -90,23 +90,32 @@ const emojiList = [
 
 const now = dayjs()
 
-const store = useModeStore()
-
 const router = useRouter()
 
-// 这里ts校验有问题
-const { isAnonymity, room, password, user } = useRoute().query as any
+const store = useLoginStore()
 
-if (!isAnonymity || !room || !user) {
+// 这里ts校验有问题
+const { mode, room, password, user } = useRoute().query as any
+
+if (!room || !user) {
+  console.log('room', room)
+  console.log('user', user)
+  console.log(333)
+
   ElMessage({
     type: 'error',
     message: '房间配置错误！',
     plain: true
   })
-  router.push('home')
+  // router.push('home')
 }
 
-const { sendMsg, backMsg, closeWs } = useWebSocket<wsType>(true, { room, user, password })
+const { sendMsg, backMsg, closeWs } = useWebSocket<wsType>(true, {
+  room: room,
+  user: user,
+  password: password,
+  isAnonymity: mode
+})
 
 // 文本框内容
 const textarea = ref('')
@@ -122,20 +131,6 @@ const bottomAnchor = ref<HTMLElement>()
 
 // 参与人员颜色
 const userListColor = ref<Record<string, string>>({})
-
-const leaveRoom = async () => {
-  const res = await post('/leave', { room, user })
-  console.log('leaveRoom', res)
-  if (res.successful) {
-    ElMessage({
-      type: 'success',
-      message: '房间退出成功！',
-      plain: true
-    })
-    closeWs()
-    router.push('home')
-  }
-}
 
 const send = () => {
   if (!textarea.value.trim()) return
@@ -162,9 +157,26 @@ const addText = (item: string) => {
   textarea.value += item
 }
 
+const leaveRoom = async () => {
+  const res = await post('/chat_room/leave', { room, user })
+  if (res.successful) {
+    ElMessage({
+      type: 'success',
+      message: '房间退出成功！',
+      plain: true
+    })
+    closeWs()
+    if (mode === ModeEnum.ANONYMITY) {
+      store.userName = ''
+    }
+    router.push('home')
+  }
+}
+
 watch(backMsg, async (nv) => {
-  console.log('backMsg', nv)
   if (!nv) return
+  console.log('backMsg', backMsg)
+
   // 成功处理
   if (nv.code === CodeEnum.SUCCESS) {
     // 判断是否为初始化/退出信息
@@ -172,10 +184,11 @@ watch(backMsg, async (nv) => {
     if (nv.total) total.value = nv.total
 
     if (!userListColor.value[nv.user]) {
-      const randomColor = getRandomColor()
-      console.log('randomColor', randomColor)
+      const string = mode + user + password + room
+      const randomColor = generateColorFromString(string)
+      // console.log('randomColor', randomColor)
       userListColor.value[nv.user] = randomColor
-      console.log('userListColor', userListColor.value)
+      // console.log('userListColor', userListColor.value)
     }
 
     if (nv.type === 'tip') {
@@ -186,7 +199,6 @@ watch(backMsg, async (nv) => {
           plain: true
         })
       }
-
       return
     }
     // 更新
@@ -197,12 +209,14 @@ watch(backMsg, async (nv) => {
       bottomAnchor.value.scrollIntoView({ behavior: 'smooth', block: 'end' })
     }
   } else {
+    console.log(222)
+
     ElMessage({
       type: 'error',
       message: '房间配置错误！',
       plain: true
     })
-    router.push('home')
+    // router.push('home')
     // console.log('执行退出操作')
   }
 })
@@ -216,11 +230,16 @@ watch(backMsg, async (nv) => {
 // )
 
 onMounted(() => {
-  if (isAnonymity === ModeEnum.ANONYMITY) {
+  if (mode === ModeEnum.ANONYMITY) {
+    console.log(111)
+    store.mode = mode
     document.documentElement.classList.add('dark')
-    store.mode = isAnonymity
   }
 })
+
+// onBeforeUnmount(() => {
+//   console.log('正常退出页面！！！')
+// })
 
 // Define your component logic here
 </script>
@@ -229,12 +248,7 @@ onMounted(() => {
   <div class="roomContianer">
     <div class="head">
       <el-tooltip content="离开房间" placement="bottom-start">
-        <ChatIcon
-          :name="store.mode === ModeEnum.ANONYMITY ? 'icon-leave_white' : 'icon-leave'"
-          size="25px"
-          class="icon"
-          @click="leaveRoom"
-        ></ChatIcon>
+        <ChatIcon :name="'icon-leave'" size="25px" class="icon" @click="leaveRoom"></ChatIcon>
       </el-tooltip>
       <div>当前房间总人数：{{ total }}</div>
     </div>
@@ -274,10 +288,7 @@ onMounted(() => {
           popper-style="max-width: 450px"
         >
           <template #reference>
-            <ChatIcon
-              :name="store.mode === ModeEnum.ANONYMITY ? 'icon-emoji_white' : 'icon-emoji'"
-              size="28px"
-            ></ChatIcon>
+            <ChatIcon :name="'icon-emoji'" size="28px"></ChatIcon>
           </template>
           <template #default>
             <div class="emojiList">
@@ -437,6 +448,10 @@ onMounted(() => {
       box-shadow: none;
       background: none;
       padding: 2px 5px;
+      font-size: 16px;
+      &:focus {
+        font-size: 16px;
+      }
     }
     .bottom-btn {
       position: absolute;

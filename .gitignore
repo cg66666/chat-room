@@ -30,4 +30,4 @@ coverage
 *.tsbuildinfo
 
 # 数据库json文件
-server/db/*
+server/db/*.json
