@@ -175,8 +175,6 @@ const leaveRoom = async () => {
 
 watch(backMsg, async (nv) => {
   if (!nv) return
-  console.log('backMsg', backMsg)
-
   // 成功处理
   if (nv.code === CodeEnum.SUCCESS) {
     // 判断是否为初始化/退出信息
@@ -231,7 +229,6 @@ watch(backMsg, async (nv) => {
 
 onMounted(() => {
   if (mode === ModeEnum.ANONYMITY) {
-    console.log(111)
     store.mode = mode
     document.documentElement.classList.add('dark')
   }

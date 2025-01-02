@@ -3,10 +3,9 @@
  * @Author: cg
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: cg
- * @LastEditTime: 2024-10-18 15:27:49
+ * @LastEditTime: 2025-01-02 13:22:53
  */
 import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -19,6 +18,7 @@ export default defineConfig(({ command, mode }) => {
   // 设置第三个参数为 '' 来加载所有环境变量，而不管是否有 `VITE_` 前缀。
   const env = loadEnv(mode, process.cwd(), '')
   return {
+    base: '/chat/',
     plugins: [
       vue(),
       AutoImport({
@@ -45,7 +45,7 @@ export default defineConfig(({ command, mode }) => {
       }
     },
     server: {
-      port: 3000,
+      port: Number(env.VITE_BASE_PORT),
       proxy: {
         '/chat_room': {
           target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
@@ -54,8 +54,7 @@ export default defineConfig(({ command, mode }) => {
         },
         '/SSO': {
           target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
-          changeOrigin: true, // 允许跨域
-          rewrite: (path) => path.replace(/^\/chat_room/, '/SSO')
+          changeOrigin: true // 允许跨域
         },
         '/ws': {
           target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
@@ -64,6 +63,9 @@ export default defineConfig(({ command, mode }) => {
           rewrite: (path) => path.replace(/^\/ws/, '/')
         }
       }
+    },
+    build: {
+      outDir: 'chat-room'
     }
   }
 })

@@ -3,7 +3,7 @@
  * @Author: cg
  * @Date: 2024-08-18 15:40:54
  * @LastEditors: cg
- * @LastEditTime: 2024-09-20 16:48:40
+ * @LastEditTime: 2025-01-02 13:25:16
  */
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import { getCookie, getQueryParams } from '@/utils'
@@ -35,7 +35,7 @@ export interface IData<T> {
   successful: boolean
 }
 export const instance = axios.create({
-  // baseURL: '/chat_room',
+  baseURL: `/${import.meta.env.VITE_PREFIX}`,
   // baseURL: '/mobile_Vue3',
   timeout: 30 * 1000 // 统一设置超时时间
 })
