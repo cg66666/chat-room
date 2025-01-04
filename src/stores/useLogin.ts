@@ -3,7 +3,7 @@
  * @Author: cg
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: cg
- * @LastEditTime: 2024-10-16 15:24:35
+ * @LastEditTime: 2025-01-05 04:09:46
  */
 import { ref, watch, computed } from 'vue'
 import { defineStore } from 'pinia'
@@ -55,9 +55,11 @@ export const useLoginStore = defineStore('useLogin', () => {
         console.log('err', err)
       }
     } else if (XToken) {
-      const res = await get('/chat_room/checkToken')
-      if (res.successful) {
+      const res = await get<{ ok: boolean }>('/chat_room/checkToken')
+      if (res.successful && res.data.ok) {
         mode.value = ModeEnum.LOGGED
+      } else {
+        toLogOut()
       }
     }
   }
@@ -72,6 +74,21 @@ export const useLoginStore = defineStore('useLogin', () => {
     window.location.href = import.meta.env.VITE_LOGIN_URL + '?redirectUrl=' + urlObj.href
   }
 
+  // 退出登录
+  const toLogOut = async () => {
+    const res = await get('/chat_room/logout')
+    if (res.successful) {
+      mode.value = ModeEnum.NOTLOGING
+      userName.value = ''
+      roomInfo.value = undefined
+      ElMessage({
+        message: '退出登录成功！',
+        type: 'warning',
+        plain: true
+      })
+    }
+  }
+
   watch(mode, async (value) => {
     // 获取已登录的用户信息
     if (value === ModeEnum.LOGGED) {
@@ -82,5 +99,5 @@ export const useLoginStore = defineStore('useLogin', () => {
     }
   })
 
-  return { userName, toLogin, checkLogin, mode, roomInfo }
+  return { userName, toLogin, toLogOut, checkLogin, mode, roomInfo }
 })

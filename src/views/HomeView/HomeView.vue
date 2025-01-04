@@ -3,7 +3,7 @@
  * @Author: cg
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: cg
- * @LastEditTime: 2024-10-23 14:43:23
+ * @LastEditTime: 2025-01-05 04:10:04
 -->
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue'
@@ -200,21 +200,19 @@ const joinRoom = async () => {
 }
 
 // 退出登录
-const toLogOut = async () => {
-  const res = await get('/chat_room/logout')
-  if (res.successful) {
-    // 清除cookie
-    document.cookie = 'X-TOKEN' + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
-    loginStore.mode = ModeEnum.NOTLOGING
-    loginStore.userName = ''
-    loginStore.roomInfo = undefined
-    ElMessage({
-      message: '退出登录成功！',
-      type: 'warning',
-      plain: true
-    })
-  }
-}
+// const toLogOut = async () => {
+//   const res = await get('/chat_room/logout')
+//   if (res.successful) {
+//     loginStore.mode = ModeEnum.NOTLOGING
+//     loginStore.userName = ''
+//     loginStore.roomInfo = undefined
+//     ElMessage({
+//       message: '退出登录成功！',
+//       type: 'warning',
+//       plain: true
+//     })
+//   }
+// }
 
 onMounted(() => {
   // 两个动画执行延迟
@@ -246,7 +244,7 @@ onMounted(() => {
         <div class="leftBottom box">
           <div
             :class="`boxContainer leftBottomBox ${isInit2 ? 'showBox' : ''}`"
-            @click="() => (loginStore.mode === ModeEnum.LOGGED ? toLogOut() : toLogin())"
+            @click="() => (loginStore.mode === ModeEnum.LOGGED ? loginStore.toLogOut() : toLogin())"
           >
             <ChatIcon
               :name="loginStore.mode === ModeEnum.NOTLOGING ? 'icon-login' : 'icon-logout'"

@@ -3,7 +3,7 @@
  * @Author: cg
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: cg
- * @LastEditTime: 2025-01-02 13:22:53
+ * @LastEditTime: 2025-01-05 04:09:36
  */
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
@@ -18,7 +18,7 @@ export default defineConfig(({ command, mode }) => {
   // 设置第三个参数为 '' 来加载所有环境变量，而不管是否有 `VITE_` 前缀。
   const env = loadEnv(mode, process.cwd(), '')
   return {
-    base: '/chat/',
+    base: `/${env.VITE_PREFIX}/`,
     plugins: [
       vue(),
       AutoImport({
@@ -47,10 +47,10 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: Number(env.VITE_BASE_PORT),
       proxy: {
-        '/chat_room': {
+        '/chat/chat_room': {
           target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
           changeOrigin: true, // 允许跨域
-          rewrite: (path) => path.replace(/^\/chat_room/, '/room')
+          rewrite: (path) => path.replace(/^\/chat\/chat_room/, '/room')
         },
         '/SSO': {
           target: env.VITE_BASE_URL, // 真实接口地址, 后端给的基地址
