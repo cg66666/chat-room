@@ -1,4 +1,4 @@
-# chat-room
+# chat_room
 
 docker build . -t chat-room
 

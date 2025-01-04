@@ -3,7 +3,7 @@
  * @Author: cg
  * @Date: 2024-08-16 11:35:37
  * @LastEditors: cg
- * @LastEditTime: 2025-01-05 04:09:36
+ * @LastEditTime: 2025-01-05 04:10:49
  */
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
@@ -65,7 +65,7 @@ export default defineConfig(({ command, mode }) => {
       }
     },
     build: {
-      outDir: 'chat-room'
+      outDir: 'chat_room'
     }
   }
 })
